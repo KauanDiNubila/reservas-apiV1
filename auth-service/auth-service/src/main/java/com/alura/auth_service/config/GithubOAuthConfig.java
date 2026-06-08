@@ -1,0 +1,26 @@
+package com.alura.auth_service.config;
+
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+@Getter
+public class GithubOAuthConfig {
+
+    @Value("${github.client-id}")
+    private String clientId;
+
+    @Value("${github.client-secret}")
+    private String clientSecret;
+
+    @Value("${github.redirect-uri}")
+    private String redirectUri;
+
+    public static final String AUTHORIZE_URL =
+            "https://github.com/login/oauth/authorize";
+    public static final String TOKEN_URL =
+            "https://github.com/login/oauth/access_token";
+    public static final String USER_URL =
+            "https://api.github.com/user";
+}

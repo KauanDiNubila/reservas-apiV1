@@ -1,0 +1,62 @@
+services:
+
+  auth-service:
+    build: ./auth-service/auth-service
+    ports:
+      - "8084:8084"
+    environment:
+      JWT_SECRET: iEXTz3qDFhhX+o7o9VRXBhnWXc4YibXVBZvxsb7Amdas77QjwrtPuCWUW0txGs3A
+      JWT_EXPIRATION: 86400000
+      GITHUB_CLIENT_ID: Ov23libvBZAmGGGqFC4t
+      GITHUB_CLIENT_SECRET: be5c3b8f61ceffb7d3524879bc291516a1e23bef
+    networks:
+      - reservas-network
+
+  room-service:
+    build: ./room-service/room-service
+    ports:
+      - "8081:8081"
+    networks:
+      - reservas-network
+
+  user-service:
+    build: ./user-service/user-service
+    ports:
+      - "8083:8083"
+    networks:
+      - reservas-network
+
+  booking-service:
+    build: ./booking-service/booking-service
+    ports:
+      - "8082:8082"
+    environment:
+      ROOM_SERVICE_URL: http://room-service:8081
+      USER_SERVICE_URL: http://user-service:8083
+    depends_on:
+      - room-service
+      - user-service
+    networks:
+      - reservas-network
+
+  api-gateway:
+    build: ./api-gateway/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      JWT_SECRET: iEXTz3qDFhhX+o7o9VRXBhnWXc4YibXVBZvxsb7Amdas77QjwrtPuCWUW0txGs3A
+      AUTH_SERVICE_URL: http://auth-service:8084
+      ROOM_SERVICE_URL: http://room-service:8081
+      BOOKING_SERVICE_URL: http://booking-service:8082
+      USER_SERVICE_URL: http://user-service:8083
+    depends_on:
+      - auth-service
+      - room-service
+      - booking-service
+      - user-service
+    networks:
+      - reservas-network
+
+networks:
+  reservas-network:
+    driver: bridge
