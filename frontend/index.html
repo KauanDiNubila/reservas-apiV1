@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas de Salas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Reservas de Salas</h1>
+            <p class="subtitle">Interface de demonstração &middot; Microsserviços Spring Boot</p>
+        </header>
+
+        <!-- TELA DE LOGIN -->
+        <section id="login-section" class="card">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="admin@email.com" value="admin@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-senha">Senha</label>
+                <input type="password" id="login-senha" placeholder="••••••" value="123456">
+            </div>
+            <button class="btn-primary" onclick="login()">Entrar</button>
+            <p id="login-error" class="error-msg hidden"></p>
+        </section>
+
+        <!-- PAINEL PRINCIPAL (oculto até logar) -->
+        <main id="main-panel" class="hidden">
+            <div class="user-bar">
+                <span id="user-info"></span>
+                <button class="btn-secondary" onclick="logout()">Sair</button>
+            </div>
+
+            <div class="grid">
+                <!-- SALAS -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Salas</h2>
+                        <button class="btn-small" onclick="carregarSalas()">Atualizar</button>
+                    </div>
+                    <form onsubmit="criarSala(event)">
+                        <div class="form-row">
+                            <input type="text" id="sala-nome" placeholder="Nome" required>
+                            <input type="number" id="sala-capacidade" placeholder="Capacidade" required>
+                        </div>
+                        <input type="text" id="sala-localizacao" placeholder="Localização">
+                        <button type="submit" class="btn-primary">Criar Sala</button>
+                    </form>
+                    <ul id="salas-list" class="data-list"></ul>
+                </section>
+
+                <!-- USUÁRIOS -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Usuários</h2>
+                        <button class="btn-small" onclick="carregarUsuarios()">Atualizar</button>
+                    </div>
+                    <form onsubmit="criarUsuario(event)">
+                        <input type="text" id="user-nome" placeholder="Nome" required>
+                        <input type="email" id="user-email" placeholder="Email" required>
+                        <button type="submit" class="btn-primary">Criar Usuário</button>
+                    </form>
+                    <ul id="usuarios-list" class="data-list"></ul>
+                </section>
+
+                <!-- RESERVAS -->
+                <section class="card full-width">
+                    <div class="card-header">
+                        <h2>Reservas</h2>
+                        <button class="btn-small" onclick="carregarReservas()">Atualizar</button>
+                    </div>
+                    <form onsubmit="criarReserva(event)">
+                        <div class="form-row">
+                            <select id="reserva-sala" required>
+                                <option value="">Selecione a sala</option>
+                            </select>
+                            <select id="reserva-usuario" required>
+                                <option value="">Selecione o usuário</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reserva-inicio">Início</label>
+                                <input type="datetime-local" id="reserva-inicio" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reserva-fim">Fim</label>
+                                <input type="datetime-local" id="reserva-fim" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Criar Reserva</button>
+                        <p id="reserva-msg" class="error-msg hidden"></p>
+                    </form>
+                    <ul id="reservas-list" class="data-list"></ul>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
