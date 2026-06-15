@@ -1,14 +1,41 @@
 services:
 
+  postgres:
+    image: postgres:16
+    container_name: postgres-reservas
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-reservas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reservas123}
+      POSTGRES_DB: reservas
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reservas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reservas-network
+
   auth-service:
     build: ./auth-service/auth-service
     ports:
       - "8084:8084"
     environment:
-      JWT_SECRET: iEXTz3qDFhhX+o7o9VRXBhnWXc4YibXVBZvxsb7Amdas77QjwrtPuCWUW0txGs3A
-      JWT_EXPIRATION: 86400000
-      GITHUB_CLIENT_ID: Ov23libvBZAmGGGqFC4t
-      GITHUB_CLIENT_SECRET: be5c3b8f61ceffb7d3524879bc291516a1e23bef
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      DATASOURCE_USERNAME: ${POSTGRES_USER:-reservas}
+      DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reservas123}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_REDIRECT_URI: http://localhost:8080/auth/github/callback
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - reservas-network
 
@@ -16,6 +43,13 @@ services:
     build: ./room-service/room-service
     ports:
       - "8081:8081"
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/room_db
+      DATASOURCE_USERNAME: ${POSTGRES_USER:-reservas}
+      DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reservas123}
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - reservas-network
 
@@ -23,6 +57,13 @@ services:
     build: ./user-service/user-service
     ports:
       - "8083:8083"
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_db
+      DATASOURCE_USERNAME: ${POSTGRES_USER:-reservas}
+      DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reservas123}
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - reservas-network
 
@@ -31,11 +72,18 @@ services:
     ports:
       - "8082:8082"
     environment:
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/booking_db
+      DATASOURCE_USERNAME: ${POSTGRES_USER:-reservas}
+      DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-reservas123}
       ROOM_SERVICE_URL: http://room-service:8081
       USER_SERVICE_URL: http://user-service:8083
     depends_on:
-      - room-service
-      - user-service
+      postgres:
+        condition: service_healthy
+      room-service:
+        condition: service_started
+      user-service:
+        condition: service_started
     networks:
       - reservas-network
 
@@ -44,7 +92,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JWT_SECRET: iEXTz3qDFhhX+o7o9VRXBhnWXc4YibXVBZvxsb7Amdas77QjwrtPuCWUW0txGs3A
+      JWT_SECRET: ${JWT_SECRET}
       AUTH_SERVICE_URL: http://auth-service:8084
       ROOM_SERVICE_URL: http://room-service:8081
       BOOKING_SERVICE_URL: http://booking-service:8082
@@ -56,6 +104,9 @@ services:
       - user-service
     networks:
       - reservas-network
+
+volumes:
+  postgres-data:
 
 networks:
   reservas-network:
